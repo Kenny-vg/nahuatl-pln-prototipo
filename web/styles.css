@@ -1,0 +1,245 @@
+:root {
+  --bg-color: #F0EDE6;        /* Beige de fondo */
+  --card-bg: #FFFFFF;        
+  --primary: #1B5E4B;        /* Verde oscuro principal */
+  --primary-hover: #144738;  
+  --text-dark: #1E2322;      
+  --text-muted: #6B7280;     
+  --border-color: #D1D5DB;   
+  --chip-bg: #E5E2DA;        
+  
+  /* Nuevos colores de tu paleta de Canva para decoración */
+  --accent-terracota: #B35E44; /* El tono naranja/café */
+  --accent-green: #68A58D;     /* El tono verde claro */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  background-color: var(--bg-color);
+  background-image: linear-gradient(var(--primary) 0%, var(--primary) 35vh, var(--bg-color) 35vh, var(--bg-color) 100%);
+  background-repeat: no-repeat;
+  color: var(--text-dark);
+  display: flex;
+  flex-direction: column; /* Cambiado para admitir footer */
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  position: relative; /* Necesario para las decoraciones */
+  overflow-x: hidden; /* Evita scroll horizontal */
+}
+
+/* DECORACIONES DE FONDO (Círculos abstractos) */
+body::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: -100px;
+  width: 350px;
+  height: 350px;
+  background-color: var(--accent-green);
+  border-radius: 50%;
+  opacity: 0.15;
+  z-index: -1;
+  filter: blur(40px); /* Difuminado elegante */
+}
+
+body::after {
+  content: '';
+  position: absolute;
+  bottom: 50px;
+  right: -80px;
+  width: 400px;
+  height: 400px;
+  background-color: var(--accent-terracota);
+  border-radius: 50%;
+  opacity: 0.15;
+  z-index: -1;
+  filter: blur(50px);
+}
+
+.card-container {
+  width: 100%;
+  max-width: 480px; 
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background-color: transparent;
+  transition: all 0.3s ease;
+  z-index: 1; /* Para que quede sobre las decoraciones */
+}
+
+.header h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: white; 
+}
+
+.header p {
+  color: #E5E7EB; 
+  font-size: 0.95rem;
+  margin-top: 6px;
+}
+
+.box-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+.box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+textarea {
+  width: 100%;
+  height: 95px;
+  border: none;
+  outline: none;
+  resize: none;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+  background: transparent;
+}
+
+.output-area {
+  min-height: 95px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-dark);
+  display: flex;
+  align-items: flex-start;
+  word-break: break-word;
+}
+
+.placeholder-text {
+  color: #9CA3AF;
+  font-weight: 400;
+  font-size: 1rem;
+}
+
+.box-footer {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.box-footer.right {
+  justify-content: flex-end;
+}
+
+.btn-main {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(27, 94, 75, 0.2);
+}
+
+.btn-main:hover {
+  background-color: var(--primary-hover);
+}
+
+.btn-main:active {
+  transform: scale(0.99);
+}
+
+.btn-sub {
+  background: #F3F4F6;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 4px 14px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.btn-sub:hover {
+  background: #E5E7EB;
+}
+
+.examples-section h3 {
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  color: var(--text-dark);
+}
+
+.chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  background-color: var(--chip-bg);
+  border: none;
+  border-radius: 12px;
+  padding: 8px 14px;
+  font-size: 0.85rem;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: transform 0.1s, background 0.2s, box-shadow 0.2s;
+}
+
+.chip:hover {
+  background-color: #DAD6CB;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+/* MEDIA QUERIES PARA LAPTOPS */
+@media (min-width: 768px) {
+  body {
+    padding: 40px;
+  }
+  .card-container {
+    max-width: 650px; 
+    margin-top: 20px; /* Centra un poco más la tarjeta */
+  }
+  .header h1 {
+    font-size: 2.6rem;
+  }
+  textarea, .output-area {
+    min-height: 110px;
+    font-size: 1.2rem;
+  }
+  
+  /* Ajuste de las decoraciones de fondo para PC */
+  body::before {
+    width: 600px;
+    height: 600px;
+    top: -150px;
+    left: -200px;
+    opacity: 0.12;
+  }
+
+  body::after {
+    width: 700px;
+    height: 700px;
+    bottom: -150px;
+    right: -250px;
+    opacity: 0.12;
+  }
+}
