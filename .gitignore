@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Modelo entrenado (se genera local, no se sube)
+modelo/*.json
+modelo/*.pkl
+*.pkl
+
+# Datos grandes (cada quien lo baja local)
+datos/train.csv
+datos/*.csv
+!datos/frases_cotidianas.csv
+!datos/README.md
+
+# Sistema
+.DS_Store
+Thumbs.db
+.vscode/
