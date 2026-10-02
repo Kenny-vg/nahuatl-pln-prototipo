@@ -1,12 +1,11 @@
 """Entrenamiento del modelo: IBM Model 1.
- 
 Idea: si una palabra en español aparece en muchas frases junto con la misma
 palabra en náhuatl, probablemente significan lo mismo. El programa lo aprende
 contando y afinando una tabla de probabilidades en varias "vueltas"."""
 
 import json
 import sys
-from collection import defaultdict
+from collections import defaultdict
 import pandas as pd
 
 from modelo.limpiar import limpiar
@@ -46,7 +45,7 @@ def entrenar_ibm1(pares, iteraciones=5):
                     total[e] += parte
         for (n,e), c in conteo.items():
             t[(n,e)] = c / total[e] #Paso M: actualizar la probabilidad, nueva tabla
-        return t
+    return t
 
 
 def tabla_a_dict(t, umbral=0.001):
