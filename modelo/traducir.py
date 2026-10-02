@@ -10,7 +10,16 @@ from modelo.buscador import buscar, construir_indice
 from modelo.limpiar import limpiar
 
 RUTA_TABLA = "modelo/tabla.json"
-RUTA_PARES = "datos/pares.ejemplo.csv"
+RUTA_PARES = "datos/train.csv"
+# Partículas ultra-frecuentes: salen en casi todo y tapan las palabras
+# con significado. Solo se ignoran al elegir la literal, nada se borra.
+RUIDO = {"in", "yn", "on"}
+# La ganadora debe superar a la 2da con significado por este factor.
+# Así la regla se adapta sola: si el modelo está seguro pasa, si está
+# parejo (todo ~0.03-0.05) dice "no sé" en vez de afirmar algo dudoso.
+MARGEN = 1.5
+# Piso para no aceptar migajas cuando casi no hay datos de esa palabra.
+PROB_PISO = 0.01
 _modelo = {} #guarda lo cargado para no leer los archivos en cada consulta
 
 def cargar_modelo(ruta_tabla=RUTA_TABLA, ruta_pares=RUTA_PARES,
@@ -41,6 +50,11 @@ def traducir(frase, umbral=0.5, max_candidatas=3):
     la frase si contiene TODAS las palabras de la entrada. Si falta una,
     es como si no se hubiera encontrado nada (encontrada=False).
     "No encontrada" se lee como encontrada=False y/o candidatas vacías.
+    Además devuelve traduccion_literal: une la mejor candidata CON SIGNIFICADO
+    de cada palabra pedida (una por una, nada de más). Se saltan las partículas
+    de RUIDO y la ganadora debe superar a la 2da por MARGEN; si alguna palabra
+    no cumple, la literal es None y esa palabra sale en desconocidas.
+    La literal sale en orden español y es orientativa palabra por palabra.
     """
 
     m = cargar_modelo()
@@ -56,11 +70,35 @@ def traducir(frase, umbral=0.5, max_candidatas=3):
     for p in limpiar(frase):
         opciones = sorted(m["tabla"].get(p,{}).items(), key=lambda x: -x[1])[:max_candidatas]
         palabras.append({"esp": p, "candidatas": [{"nah": n, "prob": pr} for n, pr in opciones]})
+    # Literal: la mejor candidata con significado de cada palabra.
+    # Se busca en TODA la tabla (no solo el top 3 mostrado), saltando RUIDO.
+    # Gana solo si supera a la 2da por MARGEN; si no, no se adivina.
+    elegidas = []
+    desconocidas = []
+    for p in limpiar(frase):
+        todas = sorted(m["tabla"].get(p, {}).items(), key=lambda x: -x[1])
+        limpias = [(nah, prob) for nah, prob in todas
+                   if nah not in RUIDO and prob >= PROB_PISO]
+        buena = None
+        if len(limpias) == 1:
+            buena = limpias[0][0]
+        elif len(limpias) >= 2 and limpias[0][1] >= MARGEN * limpias[1][1]:
+            buena = limpias[0][0]
+        if buena is None:
+            desconocidas.append(p)
+        else:
+            elegidas.append(buena)
+    if desconocidas or not elegidas:
+        literal = None
+    else:
+        literal = " ".join(elegidas)
     return {
         "encontrada": posicion is not None,
         "traduccion": m["frases_nah"][posicion] if posicion is not None else None,
         "frase_encontrada": m["frases_es"][posicion] if posicion is not None else None,
         "similitud": round(similitud, 3),
+        "traduccion_literal": literal,
+        "desconocidas": desconocidas,
         "palabras": palabras,
     } 
 
