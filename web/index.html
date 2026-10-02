@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consultor español-náhuatl</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <main class="card-container">
+    <header class="header">
+      <h1>Consultor de frases<br>español-náhuatl</h1>
+      <p>Escribe un texto y consulta su equivalencia.</p>
+    </header>
+
+    <!-- Caja Español -->
+    <section class="box-card">
+      <div class="box-header">
+        <span class="box-title">Español</span>
+        <span class="char-count" id="charCount">0 / 300</span>
+      </div>
+      <textarea id="inputText" maxlength="300" placeholder="Escribe aquí tu frase..."></textarea>
+      <div class="box-footer">
+        <button type="button" class="btn-sub" id="btnClear">Borrar</button>
+      </div>
+    </section>
+
+    <!-- Botón Central ahora dice Consultar -->
+    <button type="button" class="btn-main" id="btnConsultar">Consultar</button>
+
+    <!-- Caja Náhuatl -->
+    <section class="box-card">
+      <div class="box-header">
+        <span class="box-title">Náhuatl</span>
+      </div>
+      <div class="output-area" id="outputText">
+        <span class="placeholder-text">El resultado aparecerá aquí.</span>
+      </div>
+      <div class="box-footer right">
+        <button type="button" class="btn-sub" id="btnCopy">Copiar</button>
+      </div>
+    </section>
+
+    <!-- Ejemplos rápidos -->
+    <section class="examples-section">
+      <h3>Prueba con un ejemplo</h3>
+      <div class="chips-grid">
+        <button type="button" class="chip">Buenos días</button>
+        <button type="button" class="chip">Hola amigo</button>
+        <button type="button" class="chip">Gracias</button>
+        <button type="button" class="chip">Agua y maíz</button>
+        <button type="button" class="chip">Flor y corazón</button>
+      </div>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
