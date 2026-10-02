@@ -13,9 +13,11 @@ from modelo.limpiar import limpiar
 RUTA_PARES = "datos/pares.ejemplo.csv"
 RUTA_TABLA = "modelo/tabla.json"
 
-def cargar_pares(ruta_csv, col_esp="español", col_nah="nahuatl"):
+def cargar_pares(ruta_csv, col_esp="espanol", col_nah="nahuatl"):
     """Carga un CSV de pares de frases y devuelve una lista de tuplas (frase_esp, frase_nah)"""
     df = pd.read_csv(ruta_csv)
+    # El train.csv trae sp/nah: se renombra por dentro, el archivo no se toca.
+    df = df.rename(columns={"sp": "espanol", "nah": "nahuatl"})
     if col_esp not in df.columns or col_nah not in df.columns:
         raise ValueError(f"No encontré las columnas. El CSV tiene: {list(df.columns)}")
     df = df.dropna(subset=[col_esp, col_nah])

@@ -19,7 +19,10 @@ def cargar_modelo(ruta_tabla=RUTA_TABLA, ruta_pares=RUTA_PARES,
     if not _modelo:
         with open(ruta_tabla, encoding="utf-8") as f:
             _modelo["tabla"] = json.load(f)
-            df = pd.read_csv(ruta_pares).dropna(subset=[col_esp, col_nah])
+            df = pd.read_csv(ruta_pares)
+            # El train.csv trae sp/nah: se renombra por dentro, el archivo no se toca.
+            df = df.rename(columns={"sp": "espanol", "nah": "nahuatl"})
+            df = df.dropna(subset=[col_esp, col_nah])
             _modelo["frases_es"] = df[col_esp].astype(str).tolist()
             _modelo["frases_nah"] = df[col_nah].astype(str).tolist()
             _modelo["vectorizador"], _modelo["matriz"] = construir_indice(_modelo["frases_es"])
@@ -32,11 +35,23 @@ def traducir(frase, umbral=0.5, max_candidatas=3):
         "traduccion": "..." o None,        # traducción de esa frase
         "frase_encontrada": "..." o None,  # cuál frase conocida se usó
         "similitud": 0.0 a 1.0,            # qué tan parecida fue
-        "palabras": [ {"esp": "hola", "candidatas": [{"nah": "niltze", "prob": 0.9}]} ]
-    } """
+        "palabras": [ {"esp": "hola", "candidatas": [{"nah": "tok1", "prob": 0.9}]} ]
+    }
+    Regla anti-invención: aunque el parecido pase el umbral, solo se acepta
+    la frase si contiene TODAS las palabras de la entrada. Si falta una,
+    es como si no se hubiera encontrado nada (encontrada=False).
+    "No encontrada" se lee como encontrada=False y/o candidatas vacías.
+    """
 
     m = cargar_modelo()
     posicion, similitud = buscar(frase, m["vectorizador"], m["matriz"], umbral)
+    if posicion is not None:
+        # Cobertura total: la frase hallada debe tener TODAS las palabras
+        # de la entrada. Se limpia igual para comparar justo.
+        pedidas = set(limpiar(frase))
+        halladas = set(limpiar(m["frases_es"][posicion]))
+        if not pedidas <= halladas:
+            posicion = None  # parece parecida, pero no es lo pedido
     palabras = []
     for p in limpiar(frase):
         opciones = sorted(m["tabla"].get(p,{}).items(), key=lambda x: -x[1])[:max_candidatas]
