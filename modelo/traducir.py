@@ -13,7 +13,7 @@ RUTA_TABLA = "modelo/tabla.json"
 RUTA_PARES = "datos/pares.ejemplo.csv"
 _modelo = {} #guarda lo cargado para no leer los archivos en cada consulta
 
-def cargar_modelo(ruta_tabla=RUTA_TABLA, ruta_pare=RUTA_PARES,
+def cargar_modelo(ruta_tabla=RUTA_TABLA, ruta_pares=RUTA_PARES,
                     col_esp="espanol", col_nah="nahuatl"):
     """Carga la tabla entrenada y arma el indice del buscador (una sola vez)"""
     if not _modelo:
