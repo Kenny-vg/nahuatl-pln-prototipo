@@ -10,7 +10,7 @@ import pandas as pd
 
 from modelo.limpiar import limpiar
 
-RUTA_PARES = "datos/train.csv"
+RUTA_PARES = "datos/train_80%.csv"
 RUTA_TABLA = "modelo/tabla.json"
 
 def cargar_pares(ruta_csv, col_esp="espanol", col_nah="nahuatl"):

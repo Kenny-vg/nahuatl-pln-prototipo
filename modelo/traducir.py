@@ -10,7 +10,7 @@ from modelo.buscador import buscar, construir_indice
 from modelo.limpiar import limpiar
 
 RUTA_TABLA = "modelo/tabla.json"
-RUTA_PARES = "datos/train.csv"
+RUTA_PARES = "datos/train_80%.csv"
 # Partículas ultra-frecuentes: salen en casi todo y tapan las palabras
 # con significado. Solo se ignoran al elegir la literal, nada se borra.
 RUIDO = {"in", "yn", "on"}
