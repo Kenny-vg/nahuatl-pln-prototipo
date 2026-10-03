@@ -135,6 +135,13 @@ textarea {
   font-size: 1rem;
 }
 
+/* Reutiliza la paleta y las tarjetas existentes para separar los avisos. */
+.result-details {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
 .box-footer {
   display: flex;
   justify-content: flex-start;

@@ -25,7 +25,7 @@ que use la API: también evita crear cachés al importar `modelo/`.
 
 ## Configurar el artefacto IBM
 
-En la revisión de esta copia no se encontró `modelo/tabla.json`. Hace falta un
+En la revisión inicial no se encontró `modelo/tabla.json`. Hace falta un
 JSON **ya entrenado**, no una tabla vacía. Su estructura debe ser un diccionario
 no vacío `{palabra_es: {palabra_nah: probabilidad}}`, con probabilidades finitas
 entre 0 y 1. La validación de formato no acredita su calidad ni su procedencia.
@@ -36,10 +36,39 @@ Indica la ubicación del archivo existente sin moverlo ni modificarlo:
 $env:NAHUATL_TABLA = "C:\ruta\al\artefacto\tabla.json"
 ```
 
-Si omites la variable, se busca `modelo/tabla.json`. Una ruta relativa se resuelve
+Si omites la variable, se usa `api/artefactos/tabla.json` cuando existe; en caso
+contrario se busca `modelo/tabla.json`. Una ruta relativa se resuelve
 respecto a la raíz del proyecto. El corpus siempre es `datos/train.csv`; ambos
 recursos se leen sin modificarlos. No se buscan artefactos arbitrarios fuera del
 proyecto ni se descargan modelos automáticamente.
+
+### Entrenar manualmente en este equipo
+
+Si aún no existe la tabla local, ejecuta desde la raíz:
+
+```powershell
+$env:PYTHONDONTWRITEBYTECODE = "1"
+& ./api/.venv/Scripts/python.exe -B -u -m api.entrenar
+```
+
+Este comando reutiliza las funciones de `modelo/entrenar.py`, lee
+`datos/train_80%.csv`, ejecuta diez iteraciones y guarda el resultado en
+`api/artefactos/tabla.json`. No modifica el modelo ni los CSV, no sobrescribe
+una tabla existente y no se ejecuta al arrancar la API. El JSON es un artefacto
+persistente de entrenamiento, no una caché temporal. Está excluido de Git.
+Si aparece un error de memoria, no hay una tabla utilizable: libera memoria y
+reintenta o entrena en un equipo con más memoria. No se reduce el corpus ni se
+cambian las diez iteraciones automáticamente.
+Reinicia Uvicorn al terminar. Si habías definido `NAHUATL_TABLA` para otro archivo,
+actualiza esa variable o elimínala de la sesión para usar la selección local:
+
+```powershell
+Remove-Item Env:NAHUATL_TABLA -ErrorAction SilentlyContinue
+```
+
+El entrenamiento IBM usa únicamente el 80 %. El buscador mantiene el corpus
+`datos/train.csv` solicitado para la API; por tanto, verificar recuperación sobre
+ese corpus no constituye una evaluación independiente sobre el 20 % reservado.
 
 La API carga una vez por proceso. El cargador existente construye TF-IDF en memoria
 y conserva su caché; eso no reentrena IBM ni guarda un índice en disco. Si falla
@@ -129,7 +158,7 @@ traducción única. La verificación real queda pendiente mientras falte el arte
 
 ## Verificación realizada en esta implementación
 
-- 42 pruebas Python aprobadas y 9 pruebas JavaScript aprobadas, incluida la
+- 43 pruebas Python aprobadas y 9 pruebas JavaScript aprobadas, incluida la
   traducción literal con casos controlados.
 - Uvicorn real: `/web/` responde 200; `/salud` y una consulta válida responden
   503 al faltar el artefacto. También se verificó el mensaje en el navegador y
@@ -139,3 +168,7 @@ traducción única. La verificación real queda pendiente mientras falte el arte
   README raíz, pero no estaba instalado en este equipo y no se probó aquí.
 - TestClient emitió un aviso de deprecación del uso de HTTPX con Starlette;
   no hubo fallos. No se verificó una traducción con un JSON IBM entrenado real.
+- Se intentó entrenar manualmente con 15 284 pares de `train_80%.csv` y diez
+  iteraciones. La implementación existente se detuvo con `MemoryError` antes
+  de guardar el JSON. El artefacto sigue pendiente; la API continúa en estado
+  de modelo no disponible. No se alteraron los datasets ni el algoritmo.

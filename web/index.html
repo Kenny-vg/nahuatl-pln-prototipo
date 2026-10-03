@@ -34,12 +34,19 @@
       <div class="box-header">
         <span class="box-title">Náhuatl</span>
       </div>
-      <div class="output-area" id="outputText">
-        <span class="placeholder-text">El resultado aparecerá aquí.</span>
-      </div>
+      <div class="output-area" id="outputText" aria-label="Traducción en náhuatl"></div>
       <div class="box-footer right">
         <button type="button" class="btn-sub" id="btnCopy">Copiar</button>
       </div>
+    </section>
+
+    <!-- Información separada: nunca forma parte de la traducción ni se copia. -->
+    <section class="box-card result-details" aria-label="Información de la consulta">
+      <div class="box-header">Información de la consulta</div>
+      <p id="queryStatus" role="status" aria-live="polite">El resultado aparecerá aquí.</p>
+      <p id="matchScore" hidden></p>
+      <p id="matchedPhrase" hidden></p>
+      <p id="matchExplanation" hidden>El porcentaje mide parecido entre textos, no la certeza de la traducción.</p>
     </section>
 
     <!-- Ejemplos rápidos -->

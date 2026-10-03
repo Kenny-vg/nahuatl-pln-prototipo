@@ -2,6 +2,10 @@
 document.addEventListener('DOMContentLoaded', () => {
   const inputText = document.getElementById('inputText');
   const outputText = document.getElementById('outputText');
+  const queryStatus = document.getElementById('queryStatus');
+  const matchScore = document.getElementById('matchScore');
+  const matchedPhrase = document.getElementById('matchedPhrase');
+  const matchExplanation = document.getElementById('matchExplanation');
   const charCount = document.getElementById('charCount');
   const btnConsultar = document.getElementById('btnConsultar'); // Cambiado a btnConsultar
   const btnClear = document.getElementById('btnClear');
@@ -13,19 +17,18 @@ document.addEventListener('DOMContentLoaded', () => {
   outputText.setAttribute('aria-live', 'polite');
   outputText.setAttribute('role', 'status');
 
-  // Los mensajes usan la clase visual existente; el texto remoto nunca es HTML.
+  // Traducción y avisos tienen destinos distintos. Copiar toma solo náhuatl.
   function mostrarMensaje(mensaje, esTraduccion = false) {
     resultadoCopiable = esTraduccion;
     clearTimeout(temporizadorCopiar);
     btnCopy.textContent = 'Copiar';
-    if (esTraduccion) {
-      outputText.textContent = mensaje;
-    } else {
-      const aviso = document.createElement('span');
-      aviso.className = 'placeholder-text';
-      aviso.textContent = mensaje;
-      outputText.replaceChildren(aviso);
+    outputText.textContent = esTraduccion ? mensaje : '';
+    queryStatus.textContent = esTraduccion ? '' : mensaje;
+    for (const elemento of [matchScore, matchedPhrase]) {
+      elemento.textContent = '';
+      elemento.hidden = true;
     }
+    matchExplanation.hidden = true;
   }
 
   function bloquearControles(bloquear) {
@@ -36,17 +39,33 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function mostrarResultado(datos) {
-    // El servidor entrega ambas salidas del modelo. No elegimos ni concatenamos
-    // candidatas aquí; mantenemos el aviso orientativo también al copiar.
+    // Una palabra aislada usa la literal; una frase prioriza el par del corpus.
     const literal = typeof datos.traduccion_literal === 'string'
       && datos.traduccion_literal.trim() ? datos.traduccion_literal : null;
-    let mensaje = datos.resultado;
-    if (literal) {
-      mensaje += ` · Traducción literal orientativa (palabra por palabra, en orden español): ${literal}`;
-    } else if (Array.isArray(datos.desconocidas) && datos.desconocidas.length) {
-      mensaje += ` · Sin traducción literal completa: no hay una candidata clara para ${datos.desconocidas.join(', ')}.`;
+    const esPalabra = Array.isArray(datos.palabras) && datos.palabras.length === 1;
+    const delCorpus = !esPalabra && datos.encontrada && typeof datos.traduccion === 'string'
+      && datos.traduccion.trim();
+    const traduccion = delCorpus ? datos.traduccion : literal;
+    mostrarMensaje(traduccion || '', Boolean(traduccion));
+    queryStatus.textContent = delCorpus
+      ? 'Se muestra la traducción de la frase recuperada del corpus.'
+      : literal ? 'Traducción literal orientativa, palabra por palabra; no garantiza corrección gramatical.'
+        : esPalabra ? 'No hay una traducción suficientemente clara para esta palabra.'
+          : 'No encontré esa frase ni una traducción literal completa.';
+    if (!literal && Array.isArray(datos.desconocidas) && datos.desconocidas.length) {
+      queryStatus.textContent += ` Sin candidata literal clara para: ${datos.desconocidas.join(', ')}.`;
     }
-    mostrarMensaje(mensaje, datos.encontrada || Boolean(literal));
+    // La similitud pertenece al buscador, incluso si se muestra una literal.
+    if (typeof datos.similitud === 'number' && Number.isFinite(datos.similitud)
+        && datos.similitud >= 0 && datos.similitud <= 1) {
+      matchScore.textContent = `Parecido de la frase más cercana: ${(datos.similitud * 100).toLocaleString('es-MX', {maximumFractionDigits: 1})} %${datos.encontrada ? '' : ' (coincidencia no aceptada)'}`;
+      matchScore.hidden = false;
+      matchExplanation.hidden = false;
+    }
+    if (datos.encontrada && typeof datos.frase_encontrada === 'string') {
+      matchedPhrase.textContent = `Frase encontrada en español: ${datos.frase_encontrada}`;
+      matchedPhrase.hidden = false;
+    }
   }
 
   inputText.addEventListener('input', () => {
