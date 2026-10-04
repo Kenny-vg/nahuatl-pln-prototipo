@@ -8,7 +8,7 @@ Hace dos cosas:
 import csv
 import pandas as pd
 
-from modelo.traducir import traducir, cargar_modelo, RUIDO, MARGEN, PROB_PISO
+from modelo.traducir import traducir, cargar_modelo, RUIDO, MARGEN, PROB_PISO, PISO_SOMBRA
 from modelo.limpiar import limpiar
 
 RUTA_TEST = "datos/test_20%.csv"   # cambia el nombre si tu archivo se llama distinto
@@ -46,9 +46,16 @@ def correr_casos():
 
 
 def elegir(candidatas):
-    """Misma regla que traducir(): quita ruido y piso, y exige el margen."""
-    limpias = [(n, p) for n, p in sorted(candidatas.items(), key=lambda x: -x[1])
-               if n not in RUIDO and p >= PROB_PISO]
+    """Misma regla que traducir(): quita ruido y piso, exige el margen, y
+    veta si una partícula débil ganadora hace sombra a una contendiente
+    cercana (ver PISO_SOMBRA en traducir)."""
+    todas = sorted(candidatas.items(), key=lambda x: -x[1])
+    limpias = [(n, p) for n, p in todas if n not in RUIDO and p >= PROB_PISO]
+    if todas and todas[0][0] in RUIDO and len(todas) >= 2:
+        nah2, prob2 = todas[1]
+        if nah2 not in RUIDO and prob2 >= PROB_PISO:
+            if todas[0][1] < PISO_SOMBRA and todas[0][1] < MARGEN * prob2:
+                return None
     if len(limpias) == 1:
         return limpias[0][0]
     if len(limpias) >= 2 and limpias[0][1] >= MARGEN * limpias[1][1]:
