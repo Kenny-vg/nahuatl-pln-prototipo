@@ -53,7 +53,7 @@ test('separa traducción, parecido y frase; borrar limpia los detalles', async (
   assert.ok(elementos.scoreTag.textContent.includes('66%'));
   assert.equal(elementos.similarityText.textContent, 'similitud media');
   assert.ok(elementos.matchedPhraseText.textContent.includes('Buenos días Francisco'));
-  assert.ok(elementos.queryStatusMsg.textContent.includes('dias'));
+  assert.equal(elementos.queryStatusMsg.hidden, true);
   assert.equal(elementos.matchSection.hidden, false);
   elementos.btnClear.eventos.click();
   assert.equal(elementos.inputText.value, '');
@@ -73,8 +73,8 @@ test('el parecido no aceptado no se presenta como confianza de la literal', asyn
   assert.equal(elementos.outputText.textContent, '');
   assert.equal(elementos.matchSection.hidden, true);
   assert.equal(elementos.notFoundBox.hidden, false);
-  assert.ok(elementos.queryStatusMsg.textContent.includes('orientativa'));
-  assert.ok(elementos.queryStatusMsg.textContent.includes('token'));
+  assert.equal(elementos.queryStatusMsg.hidden, true);
+  assert.ok(!elementos.queryStatusMsg.textContent.includes('token'));
   assert.equal(elementos.wordsList.hijos.length, 1);
   assert.equal(elementos.wordsList.hijos[0].hijos[2].textContent, 'sin candidatas');
 });
@@ -149,7 +149,7 @@ test('bloquea envíos duplicados y restaura tras fallo de red', async () => {
 });
 
 for (const encontrada of [true, false]) {
-  test(`muestra la literal orientativa separada; encontrada=${encontrada}`, async () => {
+  test(`la literal de la API no se pega como texto; encontrada=${encontrada}`, async () => {
     const { elementos, consultar } = preparar(async () => ({
       ok: true, json: async () => (encontrada
         ? { encontrada, resultado: 'Frase del corpus', traduccion: 'Frase del corpus',
@@ -159,8 +159,8 @@ for (const encontrada of [true, false]) {
             traduccion_literal: 'token_a token_b', desconocidas: [] }),
     }));
     await consultar();
-    assert.ok(elementos.queryStatusMsg.textContent.includes('orientativa'));
-    assert.ok(elementos.queryStatusMsg.textContent.includes('token_a token_b'));
+    assert.equal(elementos.queryStatusMsg.hidden, true);
+    assert.ok(!elementos.queryStatusMsg.textContent.includes('token_a token_b'));
     if (encontrada) {
       assert.equal(elementos.outputText.textContent, 'Frase del corpus');
     } else {
@@ -169,15 +169,15 @@ for (const encontrada of [true, false]) {
   });
 }
 
-test('explica palabras sin candidata sin crear una traducción parcial', async () => {
+test('las desconocidas se ven en la tarjeta de palabras, no como texto pegado', async () => {
   const { elementos, consultar } = preparar(async () => ({
     ok: true, json: async () => ({ encontrada: false, resultado: 'No encontré esa frase',
       traduccion_literal: null, desconocidas: ['desconocida'],
       palabras: [{ esp: 'hola', candidatas: [{ nah: 'NO CONCATENAR', prob: 0.9 }] }] }),
   }));
   await consultar();
-  assert.ok(elementos.queryStatusMsg.textContent.includes('Sin candidata literal clara'));
-  assert.ok(elementos.queryStatusMsg.textContent.includes('desconocida'));
+  assert.equal(elementos.queryStatusMsg.hidden, true);
+  assert.equal(elementos.notFoundBox.hidden, false);
   assert.equal(elementos.wordsList.hijos[0].hijos[2].textContent, 'NO CONCATENAR');
   assert.ok(!elementos.outputText.textContent.includes('NO CONCATENAR'));
 });
@@ -192,5 +192,5 @@ test('la partícula principal se etiqueta y no se confunde con traducción', asy
   const fila = elementos.wordsList.hijos[0];
   assert.ok(fila.hijos[2].textContent.includes('(partícula)'));
   assert.ok(fila.hijos[3].textContent.includes('se omite en la literal'));
-  assert.ok(elementos.queryStatusMsg.textContent.includes('que'));
+  assert.equal(elementos.queryStatusMsg.hidden, true);
 });

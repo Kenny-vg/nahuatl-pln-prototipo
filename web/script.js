@@ -188,18 +188,10 @@ document.addEventListener('DOMContentLoaded', () => {
       resultadoCopiable = false;
     }
 
-    // Literal orientativa y palabras sin candidata: la API las entrega y el
-    // contrato las documenta; se muestran como nota separada, sin mezclarlas
-    // con la traducción del corpus (que es lo único que se copia).
-    const literal = typeof datos.traduccion_literal === 'string'
-      && datos.traduccion_literal.trim() ? datos.traduccion_literal.trim() : null;
-    if (literal) {
-      queryStatusMsg.hidden = false;
-      queryStatusMsg.textContent = `Traducción literal orientativa (palabra por palabra): ${literal}`;
-    } else if (Array.isArray(datos.desconocidas) && datos.desconocidas.length > 0) {
-      queryStatusMsg.hidden = false;
-      queryStatusMsg.textContent = `Sin candidata literal clara para: ${datos.desconocidas.join(', ')}.`;
-    }
+    // Nota: la literal palabra-por-palabra y las desconocidas las sigue
+    // entregando la API (contrato + informe QA), pero no se muestran como
+    // texto: el desglose por palabra de la tarjeta ya cubre ese nivel con
+    // sus etiquetas de partícula. queryStatusMsg queda solo para carga/error.
   }
 
   // Estado de carga mientras responde la API
