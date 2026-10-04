@@ -13,11 +13,16 @@ RUTA_TABLA = "modelo/tabla.json"
 RUTA_PARES = "datos/train_80%.csv"
 # Partículas ultra-frecuentes: salen en casi todo y tapan las palabras
 # con significado. Solo se ignoran al elegir la literal, nada se borra.
-RUIDO = {"in", "yn", "on"}
+# ca es la 11a palabra más frecuente del corpus (partícula enfática,
+# como in/yn/on); sin filtrarla el modelo adivina "corazón"->ca.
+RUIDO = {"in", "yn", "on", "ca"}
 # La ganadora debe superar a la 2da con significado por este factor.
 # Así la regla se adapta sola: si el modelo está seguro pasa, si está
 # parejo (todo ~0.03-0.05) dice "no sé" en vez de afirmar algo dudoso.
-MARGEN = 1.5
+# Calibrado en test_20%: 1.5->56.2% responde/40.6% acierta; 1.3->68.7%/38.5%
+# (neta 22.8%->26.5%). 1.3 desbloquea casos dialectales (dias: tonajli/tonaltin
+# ratio 1.37) con pérdida mínima de precisión.
+MARGEN = 1.3
 # Piso para no aceptar migajas cuando casi no hay datos de esa palabra.
 PROB_PISO = 0.01
 _modelo = {} #guarda lo cargado para no leer los archivos en cada consulta

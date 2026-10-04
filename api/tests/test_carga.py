@@ -100,9 +100,13 @@ def test_fallo_parcial_no_reintenta(recursos, modulo_limpio):
 def test_rutas_desde_proyecto(monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("NAHUATL_TABLA", "api/artefacto.json")
+    monkeypatch.delenv("NAHUATL_CORPUS", raising=False)
     config = Configuracion.desde_entorno()
     assert config.ruta_tabla == RAIZ_PROYECTO / "api" / "artefacto.json"
-    assert config.ruta_corpus == RAIZ_PROYECTO / "datos" / "train.csv"
+    assert config.ruta_corpus == RAIZ_PROYECTO / "datos" / "train_80%.csv"
+    monkeypatch.setenv("NAHUATL_CORPUS", "datos/mi_corpus.csv")
+    config = Configuracion.desde_entorno()
+    assert config.ruta_corpus == RAIZ_PROYECTO / "datos" / "mi_corpus.csv"
 
 
 def test_parametros_y_literal_separada(recursos, modulo_limpio, monkeypatch):
@@ -156,7 +160,8 @@ def test_indice_incompleto(recursos, modulo_limpio, monkeypatch):
     ({"in": 0.99, "yn": 0.95, "on": 0.9, "token": 0.1}, "token", []),
     ({"token": 0.6, "otra": 0.3}, "token", []),
     ({"token": 0.45, "otra": 0.3}, "token", []),
-    ({"token": 0.4, "otra": 0.3}, None, ["hola"]),
+    ({"token": 0.4, "otra": 0.3}, "token", []),
+    ({"token": 0.38, "otra": 0.3}, None, ["hola"]),
     ({"token": 0.009}, None, ["hola"]),
     ({"token": 0.01}, "token", []),
 ])

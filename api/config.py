@@ -14,7 +14,7 @@ class Configuracion:
     """Permite indicar otro JSON entrenado sin moverlo ni alterar el modelo."""
 
     ruta_tabla: Path
-    ruta_corpus: Path = RAIZ_PROYECTO / "datos" / "train.csv"
+    ruta_corpus: Path = RAIZ_PROYECTO / "datos" / "train_80%.csv"
 
     @classmethod
     def desde_entorno(cls):
@@ -22,4 +22,7 @@ class Configuracion:
         ruta = Path(os.environ.get("NAHUATL_TABLA", "modelo/tabla.json"))
         if not ruta.is_absolute():
             ruta = RAIZ_PROYECTO / ruta
-        return cls(ruta_tabla=ruta.resolve())
+        corpus = Path(os.environ.get("NAHUATL_CORPUS", "datos/train_80%.csv"))
+        if not corpus.is_absolute():
+            corpus = RAIZ_PROYECTO / corpus
+        return cls(ruta_tabla=ruta.resolve(), ruta_corpus=corpus.resolve())
