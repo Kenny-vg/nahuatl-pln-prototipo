@@ -174,7 +174,21 @@ document.addEventListener('DOMContentLoaded', () => {
       translationSection.hidden = true;
       warningBox.hidden = true;
       notFoundBox.hidden = false;
+      outputText.textContent = '';
       resultadoCopiable = false;
+    }
+
+    // Literal orientativa y palabras sin candidata: la API las entrega y el
+    // contrato las documenta; se muestran como nota separada, sin mezclarlas
+    // con la traducción del corpus (que es lo único que se copia).
+    const literal = typeof datos.traduccion_literal === 'string'
+      && datos.traduccion_literal.trim() ? datos.traduccion_literal.trim() : null;
+    if (literal) {
+      queryStatusMsg.hidden = false;
+      queryStatusMsg.textContent = `Traducción literal orientativa (palabra por palabra): ${literal}`;
+    } else if (Array.isArray(datos.desconocidas) && datos.desconocidas.length > 0) {
+      queryStatusMsg.hidden = false;
+      queryStatusMsg.textContent = `Sin candidata literal clara para: ${datos.desconocidas.join(', ')}.`;
     }
   }
 
@@ -206,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     translationSection.hidden = true;
     warningBox.hidden = true;
     notFoundBox.hidden = true;
+    outputText.textContent = '';
     queryStatusMsg.hidden = false;
     queryStatusMsg.textContent = mensaje;
     resultadoCopiable = false;
@@ -228,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resultCard.className = 'box-card result-card state-idle';
     statusBadge.textContent = 'Esperando consulta';
     scoreTag.textContent = '';
+    outputText.textContent = '';
     wordsList.innerHTML = '<p class="words-empty-note">Las candidatas aprendidas por el modelo aparecerán aquí tras consultar.</p>';
     resultadoCopiable = false;
     inputText.focus();

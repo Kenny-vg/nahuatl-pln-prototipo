@@ -1,5 +1,6 @@
 // Prueba el JavaScript real con controles y respuestas HTTP controladas.
 // No requiere paquetes de Node ni escribe archivos fuera de api/.
+// El mock reproduce las IDs reales de web/index.html que usa web/script.js.
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { readFileSync } = require('node:fs');
@@ -7,44 +8,23 @@ const { resolve } = require('node:path');
 const vm = require('node:vm');
 const codigo = readFileSync(resolve(__dirname, '../../web/script.js'), 'utf8');
 
-test('separa traducción, parecido y frase; borrar limpia los detalles', async () => {
-  const {elementos, consultar} = preparar(async () => ({ok: true, json: async () => ({
-    encontrada: true, resultado: 'texto', traduccion: 'texto náhuatl',
-    frase_encontrada: 'Buenos días Francisco', similitud: 0.661,
-    traduccion_literal: null, desconocidas: ['dias'],
-  })}));
-  await consultar();
-  assert.equal(elementos.outputText.textContent, 'texto náhuatl');
-  assert.ok(elementos.matchScore.textContent.includes('66.1 %'));
-  assert.ok(elementos.matchedPhrase.textContent.includes('Buenos días Francisco'));
-  assert.ok(elementos.queryStatus.textContent.includes('dias'));
-  elementos.btnClear.eventos.click();
-  assert.equal(elementos.outputText.textContent, '');
-  assert.equal(elementos.matchScore.hidden, true);
-  assert.equal(elementos.matchedPhrase.hidden, true);
-});
-
-test('el parecido no aceptado no se presenta como confianza de la literal', async () => {
-  const {elementos, consultar} = preparar(async () => ({ok: true, json: async () => ({
-    encontrada: false, resultado: 'No encontré esa frase', similitud: 0.8,
-    traduccion_literal: 'token', palabras: [{esp:'agua', candidatas:[]}],
-  })}));
-  await consultar();
-  assert.equal(elementos.outputText.textContent, 'token');
-  assert.ok(elementos.matchScore.textContent.includes('80 % (coincidencia no aceptada)'));
-  assert.equal(elementos.matchExplanation.hidden, false);
-});
+const IDS = ['inputText', 'charCount', 'btnClear', 'btnConsultar', 'resultCard',
+  'statusBadge', 'scoreTag', 'idleGuideBox', 'querySection', 'displayQuery',
+  'queryDivider', 'matchSection', 'similarityText', 'matchedPhraseText',
+  'progressBarFill', 'translationSection', 'outputText', 'btnCopy', 'warningBox',
+  'notFoundBox', 'queryStatusMsg', 'wordsList'];
 
 function preparar(fetch) {
   const copias = [];
   const crearElemento = () => ({
-    value: '', textContent: '', disabled: false, eventos: {},
+    value: '', textContent: '', innerHTML: '', disabled: false, hidden: false,
+    className: '', style: {}, atributos: {}, hijos: [], eventos: {},
     addEventListener(evento, funcion) { this.eventos[evento] = funcion; },
-    setAttribute() {},
-    replaceChildren(hijo) { this.textContent = hijo.textContent; },
+    setAttribute(nombre, valor) { this.atributos[nombre] = valor; },
+    appendChild(hijo) { this.hijos.push(hijo); return hijo; },
+    focus() {},
   });
-  const elementos = Object.fromEntries(['inputText', 'outputText', 'charCount',
-    'btnConsultar', 'btnClear', 'btnCopy', 'queryStatus', 'matchScore', 'matchedPhrase', 'matchExplanation'].map(id => [id, crearElemento()]));
+  const elementos = Object.fromEntries(IDS.map(id => [id, crearElemento()]));
   const chips = [crearElemento()];
   chips[0].textContent = 'Hola amigo';
   const document = {
@@ -61,6 +41,44 @@ function preparar(fetch) {
   return { elementos, chips, copias, consultar: elementos.btnConsultar.eventos.click };
 }
 
+test('separa traducción, parecido y frase; borrar limpia los detalles', async () => {
+  const {elementos, consultar} = preparar(async () => ({ok: true, json: async () => ({
+    encontrada: true, resultado: 'texto', traduccion: 'texto náhuatl',
+    frase_encontrada: 'Buenos días Francisco', similitud: 0.661,
+    traduccion_literal: null, desconocidas: ['dias'],
+  })}));
+  await consultar();
+  assert.equal(elementos.outputText.textContent, 'texto náhuatl');
+  assert.equal(elementos.statusBadge.textContent, 'Frase parecida, no igual');
+  assert.ok(elementos.scoreTag.textContent.includes('66%'));
+  assert.equal(elementos.similarityText.textContent, 'similitud media');
+  assert.ok(elementos.matchedPhraseText.textContent.includes('Buenos días Francisco'));
+  assert.ok(elementos.queryStatusMsg.textContent.includes('dias'));
+  assert.equal(elementos.matchSection.hidden, false);
+  elementos.btnClear.eventos.click();
+  assert.equal(elementos.inputText.value, '');
+  assert.equal(elementos.outputText.textContent, '');
+  assert.equal(elementos.matchSection.hidden, true);
+  assert.equal(elementos.translationSection.hidden, true);
+  assert.equal(elementos.idleGuideBox.hidden, false);
+  assert.equal(elementos.statusBadge.textContent, 'Esperando consulta');
+});
+
+test('el parecido no aceptado no se presenta como confianza de la literal', async () => {
+  const {elementos, consultar} = preparar(async () => ({ok: true, json: async () => ({
+    encontrada: false, resultado: 'No encontré esa frase', similitud: 0.8,
+    traduccion_literal: 'token', palabras: [{esp:'agua', candidatas:[]}],
+  })}));
+  await consultar();
+  assert.equal(elementos.outputText.textContent, '');
+  assert.equal(elementos.matchSection.hidden, true);
+  assert.equal(elementos.notFoundBox.hidden, false);
+  assert.ok(elementos.queryStatusMsg.textContent.includes('orientativa'));
+  assert.ok(elementos.queryStatusMsg.textContent.includes('token'));
+  assert.equal(elementos.wordsList.hijos.length, 1);
+  assert.equal(elementos.wordsList.hijos[0].hijos[2].textContent, 'sin candidatas');
+});
+
 test('copiar excluye avisos y porcentaje; error posterior borra resultados anteriores', async () => {
   let intentos = 0;
   const {elementos, consultar, copias} = preparar(async () => ++intentos === 1
@@ -68,13 +86,14 @@ test('copiar excluye avisos y porcentaje; error posterior borra resultados anter
       traduccion: 'token', similitud: 1, frase_encontrada: 'frase'})}
     : {ok: false, status: 503});
   await consultar();
+  assert.equal(elementos.statusBadge.textContent, 'Coincidencia exacta');
   await elementos.btnCopy.eventos.click();
   assert.deepEqual(copias, ['token']);
   await consultar();
   assert.equal(elementos.outputText.textContent, '');
-  assert.equal(elementos.matchScore.hidden, true);
-  assert.equal(elementos.matchedPhrase.hidden, true);
-  assert.ok(elementos.queryStatus.textContent.includes('no está disponible'));
+  assert.equal(elementos.matchSection.hidden, true);
+  assert.equal(elementos.translationSection.hidden, true);
+  assert.ok(elementos.queryStatusMsg.textContent.includes('no está disponible'));
 });
 
 for (const [estado, mensaje] of [
@@ -83,7 +102,8 @@ for (const [estado, mensaje] of [
   test(`HTTP ${estado} muestra su estado y restaura los controles`, async () => {
     const { elementos, chips, consultar } = preparar(async () => ({ ok: false, status: estado }));
     await consultar();
-    assert.ok(elementos.queryStatus.textContent.includes(mensaje));
+    assert.ok(elementos.queryStatusMsg.textContent.includes(mensaje));
+    assert.equal(elementos.outputText.textContent, '');
     for (const control of [...Object.values(elementos), ...chips]) assert.equal(control.disabled, false);
   });
 }
@@ -97,7 +117,8 @@ test('sin coincidencia no se confunde con error de conexión', async () => {
   });
   await consultar();
   assert.equal(elementos.outputText.textContent, '');
-  assert.ok(elementos.queryStatus.textContent.includes('No encontré esa frase'));
+  assert.equal(elementos.statusBadge.textContent, 'No encontré esa frase');
+  assert.equal(elementos.notFoundBox.hidden, false);
 });
 
 test('recuperación exitosa muestra exactamente resultado', async () => {
@@ -122,21 +143,29 @@ test('bloquea envíos duplicados y restaura tras fallo de red', async () => {
   assert.equal(peticiones, 1);
   rechazar(new Error('fallo controlado'));
   await pendiente;
-  assert.ok(elementos.queryStatus.textContent.includes('No se pudo conectar'));
+  assert.ok(elementos.queryStatusMsg.textContent.includes('No se pudo conectar'));
   assert.equal(elementos.btnConsultar.disabled, false);
   assert.equal(chips[0].disabled, false);
 });
 
 for (const encontrada of [true, false]) {
   test(`muestra la literal orientativa separada; encontrada=${encontrada}`, async () => {
-    const resultado = encontrada ? 'Frase del corpus' : 'No encontré esa frase';
     const { elementos, consultar } = preparar(async () => ({
-      ok: true, json: async () => ({ encontrada, resultado, traduccion: encontrada ? 'Frase del corpus' : null,
-        traduccion_literal: 'token_a token_b', desconocidas: [] }),
+      ok: true, json: async () => (encontrada
+        ? { encontrada, resultado: 'Frase del corpus', traduccion: 'Frase del corpus',
+            frase_encontrada: 'Frase del corpus', similitud: 1,
+            traduccion_literal: 'token_a token_b', desconocidas: [] }
+        : { encontrada, resultado: 'No encontré esa frase', similitud: 0.2,
+            traduccion_literal: 'token_a token_b', desconocidas: [] }),
     }));
     await consultar();
-    assert.equal(elementos.outputText.textContent, encontrada ? 'Frase del corpus' : 'token_a token_b');
-    assert.ok(elementos.queryStatus.textContent.length > 0);
+    assert.ok(elementos.queryStatusMsg.textContent.includes('orientativa'));
+    assert.ok(elementos.queryStatusMsg.textContent.includes('token_a token_b'));
+    if (encontrada) {
+      assert.equal(elementos.outputText.textContent, 'Frase del corpus');
+    } else {
+      assert.equal(elementos.outputText.textContent, '');
+    }
   });
 }
 
@@ -147,7 +176,8 @@ test('explica palabras sin candidata sin crear una traducción parcial', async (
       palabras: [{ esp: 'hola', candidatas: [{ nah: 'NO CONCATENAR', prob: 0.9 }] }] }),
   }));
   await consultar();
-  assert.ok(elementos.queryStatus.textContent.includes('Sin candidata literal clara'));
-  assert.ok(elementos.queryStatus.textContent.includes('desconocida'));
+  assert.ok(elementos.queryStatusMsg.textContent.includes('Sin candidata literal clara'));
+  assert.ok(elementos.queryStatusMsg.textContent.includes('desconocida'));
+  assert.equal(elementos.wordsList.hijos[0].hijos[2].textContent, 'NO CONCATENAR');
   assert.ok(!elementos.outputText.textContent.includes('NO CONCATENAR'));
 });
