@@ -19,7 +19,10 @@ class Configuracion:
     @classmethod
     def desde_entorno(cls):
         """Las rutas relativas del artefacto se resuelven contra el proyecto."""
-        ruta = Path(os.environ.get("NAHUATL_TABLA", "modelo/tabla.json"))
+        # El entrenamiento manual autorizado guarda en api/, sin tocar modelo/.
+        local = RAIZ_PROYECTO / "api" / "artefactos" / "tabla.json"
+        predeterminada = local if local.is_file() else RAIZ_PROYECTO / "modelo" / "tabla.json"
+        ruta = Path(os.environ.get("NAHUATL_TABLA", str(predeterminada)))
         if not ruta.is_absolute():
             ruta = RAIZ_PROYECTO / ruta
         corpus = Path(os.environ.get("NAHUATL_CORPUS", "datos/train_80%.csv"))

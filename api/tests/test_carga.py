@@ -109,6 +109,20 @@ def test_rutas_desde_proyecto(monkeypatch, tmp_path):
     assert config.ruta_corpus == RAIZ_PROYECTO / "datos" / "mi_corpus.csv"
 
 
+def test_seleccion_artefacto_local_y_prioridad_entorno(monkeypatch, tmp_path):
+    import api.config as config
+
+    monkeypatch.setattr(config, "RAIZ_PROYECTO", tmp_path)
+    monkeypatch.delenv("NAHUATL_TABLA", raising=False)
+    assert Configuracion.desde_entorno().ruta_tabla == tmp_path / "modelo" / "tabla.json"
+    local = tmp_path / "api" / "artefactos" / "tabla.json"
+    local.parent.mkdir(parents=True)
+    local.write_text('{"prueba": {"token": 1}}', encoding="utf-8")
+    assert Configuracion.desde_entorno().ruta_tabla == local
+    monkeypatch.setenv("NAHUATL_TABLA", "otra.json")
+    assert Configuracion.desde_entorno().ruta_tabla == tmp_path / "otra.json"
+
+
 def test_parametros_y_literal_separada(recursos, modulo_limpio, monkeypatch):
     servicio = ServicioModelo(recursos)
     servicio.cargar()
