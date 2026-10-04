@@ -1,0 +1,24 @@
+﻿ID,Entrada,encontrada,similitud,frase_encontrada,traduccion_literal,desconocidas
+CP-N01,Buenos días,True,0.66,Buenos días Francisco. ¿A dónde vas?,cualli tonajli,
+CP-N02,Hola amigo,False,0.418,,,hola
+CP-N03,Gracias,True,0.579,"Se encuentra bien, gracias,",tlaxtlahuijli,
+CP-N04,Agua y maíz,False,0.784,,atl niman taol,
+CP-N05,Flor y corazón,False,0.494,,,corazon
+CP-M01,BUENOS DÍAS,True,0.66,Buenos días Francisco. ¿A dónde vas?,cualli tonajli,
+CP-M02,buenos dias,True,0.66,Buenos días Francisco. ¿A dónde vas?,cualli tonajli,
+CP-M03,¡Gracias!,True,0.579,"Se encuentra bien, gracias,",tlaxtlahuijli,
+CP-M04,  agua   y   maíz  ,False,0.784,,atl niman taol,
+CP-F01,computadora,False,0.0,,,computadora
+CP-F02,agua y computadora,False,0.639,,,computadora
+CP-F03,asdfgh,False,0.0,,,asdfgh
+CP-F04,computadora teclado impresora,False,0.0,,,"computadora, teclado, impresora"
+CP-E01,gracais,False,0.0,,,gracais
+CP-E02,buenso dias,False,0.512,,,buenso
+CP-E03,aguaa,False,0.0,,,aguaa
+CP-R01,,False,0.0,,,
+CP-R02,   ,False,0.0,,,
+CP-R03,12345,False,0.0,,,12345
+CP-R04,aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa,False,0.0,,,aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+CP-R05,good morning,False,0.0,,,"good, morning"
+CP-R06,😀,False,0.0,,,
+CP-R07,<script>alert(1)</script>,False,0.512,,,"script, alert, script"
