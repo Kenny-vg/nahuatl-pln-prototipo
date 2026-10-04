@@ -181,3 +181,16 @@ test('explica palabras sin candidata sin crear una traducción parcial', async (
   assert.equal(elementos.wordsList.hijos[0].hijos[2].textContent, 'NO CONCATENAR');
   assert.ok(!elementos.outputText.textContent.includes('NO CONCATENAR'));
 });
+
+test('la partícula principal se etiqueta y no se confunde con traducción', async () => {
+  const { elementos, consultar } = preparar(async () => ({
+    ok: true, json: async () => ({ encontrada: false, resultado: 'No encontré esa frase',
+      traduccion_literal: null, desconocidas: ['que'],
+      palabras: [{ esp: 'que', candidatas: [{ nah: 'on', prob: 0.14 }, { nah: 'yehjuan', prob: 0.12 }] }] }),
+  }));
+  await consultar();
+  const fila = elementos.wordsList.hijos[0];
+  assert.ok(fila.hijos[2].textContent.includes('(partícula)'));
+  assert.ok(fila.hijos[3].textContent.includes('se omite en la literal'));
+  assert.ok(elementos.queryStatusMsg.textContent.includes('que'));
+});

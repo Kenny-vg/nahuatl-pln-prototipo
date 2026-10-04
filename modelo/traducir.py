@@ -25,6 +25,12 @@ RUIDO = {"in", "yn", "on", "ca"}
 MARGEN = 1.3
 # Piso para no aceptar migajas cuando casi no hay datos de esa palabra.
 PROB_PISO = 0.01
+# Si la ganadora real es una partícula DÉBIL (prob < PISO_SOMBRA) y la 2da
+# tiene significado y va pareja, la partícula hace sombra y no se adivina
+# (ej. "que": on .144 vs yehjuan .123). Calibrado en test_20%: sin veto
+# neta 26.6%; veto total 23.0%; con PISO_SOMBRA=0.15 neta 25.3% con
+# responde 65.4% (solo se veta donde el modelo ya dudaba).
+PISO_SOMBRA = 0.15
 _modelo = {} #guarda lo cargado para no leer los archivos en cada consulta
 
 def cargar_modelo(ruta_tabla=RUTA_TABLA, ruta_pares=RUTA_PARES,
@@ -77,7 +83,13 @@ def traducir(frase, umbral=0.5, max_candidatas=3):
         palabras.append({"esp": p, "candidatas": [{"nah": n, "prob": pr} for n, pr in opciones]})
     # Literal: la mejor candidata con significado de cada palabra.
     # Se busca en TODA la tabla (no solo el top 3 mostrado), saltando RUIDO.
-    # Gana solo si supera a la 2da por MARGEN; si no, no se adivina.
+    # Gana solo si supera a la 2da con significado por MARGEN; si no, no se
+    # adivina. Veto extra: si la ganadora REAL es una partícula y la 2da
+    # tiene significado y va pareja (p1 < MARGEN*p2), tampoco se adivina:
+    # la partícula haría sombra a una contendiente cercana (ej. "que":
+    # on .144 vs yehjuan .123). La competencia solo entre partículas
+    # (ruido vs ruido) no veta, y una única candidata con significado se
+    # acepta igual que antes.
     elegidas = []
     desconocidas = []
     for p in limpiar(frase):
@@ -85,6 +97,11 @@ def traducir(frase, umbral=0.5, max_candidatas=3):
         limpias = [(nah, prob) for nah, prob in todas
                    if nah not in RUIDO and prob >= PROB_PISO]
         buena = None
+        if todas and todas[0][0] in RUIDO and len(todas) >= 2:
+            nah2, prob2 = todas[1]
+            if nah2 not in RUIDO and prob2 >= PROB_PISO:
+                if todas[0][1] < PISO_SOMBRA and todas[0][1] < MARGEN * prob2:
+                    limpias = []  # sombra de partícula débil: no se adivina
         if len(limpias) == 1:
             buena = limpias[0][0]
         elif len(limpias) >= 2 and limpias[0][1] >= MARGEN * limpias[1][1]:

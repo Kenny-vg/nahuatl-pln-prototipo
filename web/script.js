@@ -69,6 +69,10 @@ document.addEventListener('DOMContentLoaded', () => {
     resultCard.setAttribute('aria-busy', String(bloquear));
   }
 
+  // Partículas que el modelo omite al componer la literal.
+  // Debe coincidir con RUIDO en modelo/traducir.py.
+  const PARTICULAS = new Set(['in', 'yn', 'on', 'ca']);
+
   // Renderizar la lista de palabras sueltas
   function renderizarPalabras(palabras) {
     wordsList.innerHTML = '';
@@ -100,6 +104,12 @@ document.addEventListener('DOMContentLoaded', () => {
         spanProb.textContent = typeof candidataPrincipal.prob === 'number'
           ? `prob. ${candidataPrincipal.prob.toFixed(2)}`
           : '';
+        if (PARTICULAS.has(candidataPrincipal.nah)) {
+          spanNah.textContent += ' (partícula)';
+          spanProb.textContent += spanProb.textContent
+            ? ' · se omite en la literal'
+            : 'partícula, se omite en la literal';
+        }
       } else {
         spanNah.className = 'word-nah no-cand';
         spanNah.textContent = 'sin candidatas';
