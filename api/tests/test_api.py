@@ -96,3 +96,10 @@ def test_web_mismo_origen():
         assert 'id="inputText"' in respuesta.text
         assert cliente.get("/web/script.js").status_code == 200
         assert cliente.get("/web/styles.css").status_code == 200
+
+
+def test_raiz_redirige_a_web():
+    with TestClient(crear_app(ServicioControlado())) as cliente:
+        respuesta = cliente.get("/", follow_redirects=False)
+        assert respuesta.status_code == 307
+        assert respuesta.headers["location"] == "/web/"

@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from api.config import Configuracion, RAIZ_PROYECTO
@@ -58,6 +58,11 @@ def crear_app(servicio=None):
     def consultar(consulta: Consulta):
         """Recibe {texto}, valida con Pydantic y devuelve la recuperación real."""
         return servicio.consultar(consulta.texto)
+
+    @app.get("/", include_in_schema=False)
+    def raiz():
+        """La URL raíz del despliegue muestra la app en vez de un 404."""
+        return RedirectResponse(url="/web/", status_code=307)
 
     # /web/ y /consultar comparten origen; no hace falta habilitar CORS.
     app.mount("/web", StaticFiles(directory=RAIZ_PROYECTO / "web", html=True), name="web")
