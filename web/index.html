@@ -3,63 +3,145 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Consultor español-náhuatl</title>
+  <title>Consultor de frases español → náhuatl</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-  <main class="card-container">
-    <header class="header">
-      <h1>Consultor de frases<br>español-náhuatl</h1>
-      <p>Escribe un texto y consulta su equivalencia.</p>
-    </header>
+  <!-- Cabecera Superior -->
+  <header class="hero-header">
+    <div class="hero-container">
+      <h1 class="hero-title">Consultor de frases español &rarr; náhuatl</h1>
+      <p class="hero-subtitle">Escribe una frase y busca la más parecida en el corpus Axolotl.</p>
+      <div class="hero-badge">Prototipo de PLN &middot; IBM Model 1 + búsqueda de frases</div>
+    </div>
+  </header>
 
-    <!-- Caja Español -->
-    <section class="box-card">
-      <div class="box-header">
-        <span class="box-title">Español</span>
-        <span class="char-count" id="charCount">0 / 300</span>
+  <!-- Contenedor Proporcional (980px) -->
+  <main class="main-container">
+    <div class="layout-grid">
+
+      <!-- COLUMNA IZQUIERDA -->
+      <div class="column-left">
+        
+        <!-- Tarjeta de Entrada -->
+        <section class="box-card input-card">
+          <div class="card-header-row">
+            <span class="card-title">Español</span>
+            <span class="char-count" id="charCount">0 / 300</span>
+          </div>
+          <textarea id="inputText" maxlength="300" placeholder="Escribe aquí tu frase..."></textarea>
+          <div class="card-footer-row">
+            <button type="button" class="btn-clear" id="btnClear">Borrar</button>
+          </div>
+        </section>
+
+        <!-- Botón Consultar -->
+        <button type="button" class="btn-consultar" id="btnConsultar">Consultar</button>
+
+        <!-- Tarjeta de Ejemplos -->
+        <section class="box-card examples-card">
+          <h2 class="examples-title">Prueba con un ejemplo</h2>
+          <div class="chips-grid">
+            <button type="button" class="chip">Gracias</button>
+            <button type="button" class="chip">¿Cómo están ustedes?</button>
+            <button type="button" class="chip">¿Quién viene?</button>
+          </div>
+          <p class="examples-footnote">Solo frases verificadas que están en los datos.</p>
+        </section>
+
       </div>
-      <textarea id="inputText" maxlength="300" placeholder="Escribe aquí tu frase..."></textarea>
-      <div class="box-footer">
-        <button type="button" class="btn-sub" id="btnClear">Borrar</button>
+
+      <!-- COLUMNA DERECHA -->
+      <div class="column-right">
+
+        <!-- Tarjeta de Resultado Dinámica -->
+        <section class="box-card result-card state-idle" id="resultCard" aria-live="polite">
+          
+          <!-- Encabezado del resultado -->
+          <div class="result-header-row">
+            <div class="status-badge" id="statusBadge">Esperando consulta</div>
+            <div class="score-tag" id="scoreTag"></div>
+          </div>
+
+          <!-- Guía visual inicial (evita que la tarjeta se vea vacía) -->
+          <div class="idle-guide-box" id="idleGuideBox">
+            <p class="idle-title">Consulta de frases en el corpus</p>
+            <p class="idle-desc">Escribe una palabra o frase en español a la izquierda y presiona <strong>Consultar</strong> para recuperar la equivalencia más cercana.</p>
+            <p class="idle-tip">También puedes seleccionar un ejemplo rápido como <em>«Buenos días»</em> o <em>«Gracias»</em>.</p>
+          </div>
+
+          <!-- Texto que escribió el usuario (dinámico) -->
+          <div class="query-section" id="querySection" hidden>
+            <span class="section-label">Escribiste</span>
+            <div class="query-text" id="displayQuery"></div>
+          </div>
+
+          <hr class="card-divider" id="queryDivider" hidden>
+
+          <!-- Frase recuperada del corpus y barra de similitud -->
+          <div class="match-section" id="matchSection" hidden>
+            <div class="corpus-header-row">
+              <span class="section-label">Frase más parecida en el corpus</span>
+              <span class="similarity-text" id="similarityText"></span>
+            </div>
+            <div class="matched-phrase-text" id="matchedPhraseText"></div>
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
+            </div>
+          </div>
+
+          <!-- Traducción al náhuatl -->
+          <div class="translation-section" id="translationSection" hidden>
+            <span class="section-label">Su traducción</span>
+            <div class="translation-row">
+              <div class="output-translation" id="outputText"></div>
+              <button type="button" class="btn-copy" id="btnCopy">Copiar</button>
+            </div>
+          </div>
+
+          <!-- Alerta de Estado 2 (Frase parecida, no igual) -->
+          <div class="warning-box" id="warningBox" hidden>
+            <strong>No es exactamente lo que escribiste.</strong>
+            <p>Úsalo solo como referencia.</p>
+          </div>
+
+          <!-- Estado 3 (Frase no encontrada) -->
+          <div class="not-found-box" id="notFoundBox" hidden>
+            <h3 class="not-found-title">No encontré esa frase en el corpus.</h3>
+            <p class="not-found-subtitle">Prueba con una frase más corta o con otras palabras.</p>
+          </div>
+
+          <!-- Mensaje de estado de carga o error -->
+          <p class="query-status-msg" id="queryStatusMsg" hidden></p>
+        </section>
+
+        <!-- Tarjeta de Palabras Sueltas -->
+        <section class="box-card words-card" id="wordsCard">
+          <div class="words-header-row">
+            <span class="words-title">Palabras sueltas</span>
+            <span class="words-subtitle">candidatas aprendidas</span>
+          </div>
+          <div class="words-list" id="wordsList">
+            <p class="words-empty-note">Las candidatas aprendidas por el modelo aparecerán aquí tras consultar.</p>
+          </div>
+        </section>
+
       </div>
+
+    </div>
+
+    <!-- Banner Orientativo Inferior -->
+    <section class="notice-banner">
+      <p class="notice-title">Resultado orientativo. El corpus mezcla variantes y épocas del náhuatl; verifica antes de usarlo.</p>
+      <p class="notice-desc">Si no hay una frase parecida, el programa avisa «No encontré esa frase» y no inventa una traducción.</p>
     </section>
 
-    <!-- Botón Central ahora dice Consultar -->
-    <button type="button" class="btn-main" id="btnConsultar">Consultar</button>
+    <!-- Pie de página -->
+    <footer class="footer-note">
+      <p>Maqueta con datos de ejemplo: las frases, similitudes y probabilidades son ilustrativas.</p>
+    </footer>
 
-    <!-- Caja Náhuatl -->
-    <section class="box-card">
-      <div class="box-header">
-        <span class="box-title">Náhuatl</span>
-      </div>
-      <div class="output-area" id="outputText" aria-label="Traducción en náhuatl"></div>
-      <div class="box-footer right">
-        <button type="button" class="btn-sub" id="btnCopy">Copiar</button>
-      </div>
-    </section>
-
-    <!-- Información separada: nunca forma parte de la traducción ni se copia. -->
-    <section class="box-card result-details" aria-label="Información de la consulta">
-      <div class="box-header">Información de la consulta</div>
-      <p id="queryStatus" role="status" aria-live="polite">El resultado aparecerá aquí.</p>
-      <p id="matchScore" hidden></p>
-      <p id="matchedPhrase" hidden></p>
-      <p id="matchExplanation" hidden>El porcentaje mide parecido entre textos, no la certeza de la traducción.</p>
-    </section>
-
-    <!-- Ejemplos rápidos -->
-    <section class="examples-section">
-      <h3>Prueba con un ejemplo</h3>
-      <div class="chips-grid">
-        <button type="button" class="chip">Buenos días</button>
-        <button type="button" class="chip">Hola amigo</button>
-        <button type="button" class="chip">Gracias</button>
-        <button type="button" class="chip">Agua y maíz</button>
-        <button type="button" class="chip">Flor y corazón</button>
-      </div>
-    </section>
   </main>
 
   <script src="script.js"></script>
