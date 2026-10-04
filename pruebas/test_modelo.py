@@ -36,7 +36,10 @@ def test_normalizacion_da_el_mismo_resultado(a, b):
     assert traducir(a) == traducir(b)
 
 
-@pytest.mark.parametrize("texto", ["computadora", "asdfgh", "good morning", "12345"])
+# "computadora" salió de esta lista: Tatoeba aporta traducciones reales
+# (tepoz/chīuhpōhualhuaz) y el buscador la encuentra (sim 0.83). "teclado"
+# sigue ausente del corpus y conserva el caso de palabra desconocida.
+@pytest.mark.parametrize("texto", ["teclado", "asdfgh", "good morning", "12345"])
 def test_palabras_desconocidas_no_se_inventan(texto):
     r = traducir(texto)
     assert r["encontrada"] is False
