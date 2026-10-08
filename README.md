@@ -30,7 +30,7 @@ ORIENTATIVA al náhuatl, o avisa "no encontré esa frase". No inventa traduccion
 - `pruebas/`: evaluación con 20% apartado
 - `docs/`: documentos y bitácora de prompts
 
-## Créditos y licencias (pendiente Entrega 1)
+## Créditos y licencias
 - Dataset: somosnlp-hackathon-2022/Axolotl-Spanish-Nahuatl, licencia MPL-2.0.
   Cita: Gutierrez-Vasques, Sierra y Pompa, "Axolotl: a web accessible parallel corpus for spanish-nahuatl".
 - Ampliación moderna: 369 pares español-náhuatl de Tatoeba (tatoeba.org),
@@ -38,4 +38,4 @@ ORIENTATIVA al náhuatl, o avisa "no encontré esa frase". No inventa traduccion
   columna `fuente` con id por fila).
 - Referencia para comparar: somosnlp-hackathon-2022/t5-small-spanish-nahuatl y milmor/t5-small-spanish-nahuatl, Apache 2.0. NO son nuestro modelo.
 - Verificación frases: Gran Diccionario Náhuatl UNAM (gdn.iib.unam.mx).
-- Qué generó la IA y qué modificamos: ver `docs/BITACORA_PROMPTS.md`.
+
