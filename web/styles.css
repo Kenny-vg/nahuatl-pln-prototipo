@@ -640,3 +640,57 @@ body {
     font-size: 1.55rem;
   }
 }
+
+/* ==========================================================================
+   SOLUCIÓN INTEGRAL: TEXTOS GIGANTES Y PROTECCIÓN DE "SIN CANDIDATAS"
+   (Pégalo al puro final de styles.css)
+   ========================================================================== */
+
+/* 1. Evita que las columnas principales de la pantalla se ensanchen */
+.column-left,
+.column-right {
+  min-width: 0;
+}
+
+/* 2. Sobrescribe la tarjeta: evita que 'word-break: break-all' afecte a textos normales */
+.box-card {
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+/* 3. Contenedores donde escribe el usuario: aquí sí forzamos el quiebre de cadenas infinitas */
+#inputText,
+.query-text,
+.matched-phrase-text,
+.output-translation {
+  overflow-wrap: break-word;
+  word-break: break-all;
+  min-width: 0;
+}
+
+/* 4. Cuadrícula de palabras sueltas: 
+   - minmax(0, 1fr): la palabra en español no puede robarse todo el espacio
+   - minmax(130px, 1fr): asegura que la traducción o "sin candidatas" tenga mínimo 130px */
+.word-row {
+  grid-template-columns: minmax(0, 1fr) 24px minmax(130px, 1fr) auto !important;
+}
+
+/* La palabra en español gigante se corta en su columna */
+.word-esp {
+  overflow-wrap: break-word;
+  word-break: break-all;
+  min-width: 0;
+}
+
+/* 5. Traducción náhuatl y "sin candidatas": siempre horizontal y nunca en vertical */
+.word-nah {
+  word-break: normal;
+  overflow-wrap: break-word;
+  min-width: 0;
+}
+
+.word-nah.no-cand {
+  white-space: nowrap !important;
+  word-break: normal !important;
+  flex-shrink: 0;
+}
